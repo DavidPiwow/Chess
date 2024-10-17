@@ -3,6 +3,8 @@ import numpy as np
 import pygame as pygame
 from enum import Enum
 
+import chess_board
+
 screen_size = 700
 side_size = 8
 margin = 20
@@ -56,17 +58,6 @@ class Tile:
     def draw(this):
         pass
 
-class GameBoard:
-    def __init__(this):
-        this.board = np.array([[(0,"empty") for _ in range(side_size)] for _ in range (side_size)])
-        this.board[1] += 1
-        this.board[-2] += 1
-        this.board[0] += [2,3,4,6,5,4,3,2]
-        this.board[-1] += [2,3,4,5,6,4,3,2]
-    
-    def piece_at(this, x, y):
-        pass
-
 
 def valid_pawn(tile, new_pos):
 
@@ -101,6 +92,8 @@ def drawBoard(board, size):
 screen = pygame.display.set_mode((screen_size,screen_size))
 pygame.init()
 
+gameboard = chess_board.GameBoard()
+
 running = False
 
 while running:
@@ -119,7 +112,7 @@ while running:
 
     # RENDER YOUR GAME HERE
     
-    drawBoard(side_size)
+    drawBoard(gameboard.board, side_size)
     # flip() the display to put your work on screen
     pygame.display.flip()
 
