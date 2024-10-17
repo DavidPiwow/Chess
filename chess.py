@@ -12,7 +12,6 @@ margin = 20
 draw_screen_size = screen_size - margin * 4
 rect_size = draw_screen_size/side_size
 
-
 white = (173, 167, 149)
 black = (36, 31, 26)
 
@@ -24,6 +23,7 @@ class PieceType(Enum):
     Queen = 5,
     King = 6
 
+colors = [(255,0,0),(255, 94, 0),(251, 255, 0),(0,255,0),(0,0,255),(255, 0, 255)]
 
 #valid_castle = lambda x: True if (x[0] != 0 and x[1] > 0) or (x[1] != 0 and x[0] > 0) else False
 #valid_pawn   = lambda x: True if (x[0]  > 0 and x[1] == 0) else False
@@ -80,10 +80,10 @@ def drawBoard(board, size):
                                   board[y][x]))
             
             
-
-            if board[y][x] == 2:
-                pygame.draw.circle(screen, color=pygame.Color(255,0,0), center=(x_pos + rect_size/2,y_pos + rect_size/2), radius=10)
+            pygame.draw.rect(screen, color = white if draw_white else black, rect=rect)
             
+            if board[y][x] != 0:
+                pygame.draw.circle(screen, color=pygame.Color(colors[abs(board[y][x])-1]), center=(x_pos + rect_size/2,y_pos + rect_size/2), radius=10)
             draw_white = not draw_white
 
         draw_white = not draw_white
@@ -94,7 +94,10 @@ pygame.init()
 
 gameboard = chess_board.GameBoard()
 
-running = False
+running = True
+
+from_pos = np.empty(0)
+to_pos = np.empty(0)
 
 while running:
     # poll for events
@@ -104,15 +107,26 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_focused():
-                mouse_pos = pygame.mouse.get_pos()
-                print(mouse_pos)
+                mouse_pos = np.array(pygame.mouse.get_pos())/rect_size + (-0.5,0)
+                game_pos = mouse_pos.astype(int)[::-1]
+                if from_pos.size == 0:
+                    from_pos = game_pos
+                elif to_pos.size == 0:
+                    to_pos = game_pos
+                    if (from_pos.size != 0 and to_pos.size != 0):
+                        try:
+                            gameboard.move_to(from_pos,to_pos)
+                        except:
+                            print("move error -> reset")
+        
+                    from_pos = np.empty(0)
+                    to_pos = np.empty(0)
 
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("black")
-
-    # RENDER YOUR GAME HERE
     
     drawBoard(gameboard.board, side_size)
+    
     # flip() the display to put your work on screen
     pygame.display.flip()
 
