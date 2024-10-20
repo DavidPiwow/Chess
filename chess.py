@@ -1,3 +1,7 @@
+"""
+to - do: fix this code because it was put on the back burner while working on the chess board logic
+"""
+
 import os
 import numpy as np
 import pygame as pygame
