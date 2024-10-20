@@ -29,7 +29,7 @@ class GameBoard:
 
         # Place other pieces (negative for black pieces)
         this.board[0]  = -1 * row
-        this.board[-1] = row[::-1] 
+        this.board[-1] = row 
     
     def piece_at(this, row, col):
         return this.board[row][col]
@@ -41,7 +41,8 @@ class GameBoard:
             return
         
         piece = this.piece_at(old_pos[0],old_pos[1])
-        piece_name = pieces[piece]
+        piece_name = pieces[abs(piece)]
+        
         print(f"\n{piece_name}@{old_pos} to {new_pos}")
 
         this.board[old_pos[0],old_pos[1]] = 0
@@ -49,41 +50,49 @@ class GameBoard:
         
         return piece
     
+    def check_knight(this, old_pos, new_pos):
+        move_x = abs(new_pos[0] - old_pos[0])
+        move_y = abs(new_pos[1] - old_pos[1])
+        if  not ((move_x == 2 and move_y == 1) or (move_x == 1 and move_y == 2)):
+            return False
+        # if its not negative * positive return false
+        if (this.piece_at(old_pos[0],old_pos[1]) * this.piece_at(new_pos[0],new_pos[1])) > 0:
+            return False
+                
+        return True
+
     # make sure a move is legal <3
     def valid_move(this, old_pos, new_pos):
         piece = this.board[old_pos[0]][old_pos[1]]
+        new_piece = this.board[new_pos[0],new_pos[1]]
 
+        if piece * new_piece > 0:
+            return False
+        
         # Check if knight and if not ake sure all pieces between are empty 
         if abs(piece) == 3:
-            pass
+            return this.check_knight(old_pos, new_pos)
         
+        # check if its a horizontal or vertical move  
         elif abs(new_pos[0] - old_pos[0]) == 0 or abs(new_pos[1] - old_pos[1] == 0):
-            # horizontal move
             if new_pos[0] == old_pos[0] and new_pos[1] != old_pos[1]:
                 # horizontal
+                if (abs(piece) == 1): 
+                    return False
                 move_type = 0
                 start = old_pos[1]
                 end = new_pos[1]
-                move_distance = start-end
-
-                if (abs(piece) == 6 and move_distance > 1) or not (abs(piece) == 2 or abs(piece) >= 5):
-                    print(piece)
-                    return False 
                 
             elif old_pos[0] != new_pos[0] and old_pos[1] == new_pos[1]:
                 # vertical
-                if not (abs(piece) == 2 or abs(piece) == 1 or abs(piece) >= 5):
-                    
-                    return False
-            
                 move_type = 1
                 start = old_pos[0]
                 end = new_pos[0]
-                move_distance = start-end
-
-                if (abs(piece) == 6 or abs(piece) == 1 and move_distance > 1):
-                    
-                    return False
+            
+            move_distance = start-end
+            # if not castle, queen, king
+            if (abs(piece) == 6 and move_distance > 1) or not (abs(piece) == 1 or abs(piece) == 2 or abs(piece) >= 5):
+                return False 
 
             flip = False
 
@@ -97,31 +106,45 @@ class GameBoard:
                 if not flip:
                     board_section = this.board[new_pos[0]][start+1:end+1]
                 else:
-                    board_section = this.board[new_pos[0]][start+1:end]
+                    board_section = this.board[new_pos[0]][start:end]
             else:
                 if not flip:
                     board_section = this.board.T[new_pos[1]][start+1:end+1]
                 else:
-                    board_section = this.board.T[new_pos[1]][start+1:end]
+                    board_section = this.board.T[new_pos[1]][start:end]
                 
         elif abs((old_pos[0] - new_pos[0])/(old_pos[1] - new_pos[1])) == 1:
-            # positive diagonal
-            if abs(piece) < 4:
+            # diagonal
+            
+            if abs(piece) < 4 and abs(piece != 1):
+                
                 return False
+            
+            if abs(piece) == 1:
+                if new_pos[0] != old_pos[0] - piece:
+                    return False
+            board_section = []
 
-            if (old_pos[0] - new_pos[0])/(old_pos[1] - new_pos[1]) == 1:
-                board_section = this.board.diagonal(old_pos[1])[old_pos[0] + 1:new_pos[0]+1]
-            # negative diagonal
-            else: 
-                board_section = np.fliplr(this.board).diagonal(this.board.shape[1]-1-old_pos[1])[old_pos[0]+1:new_pos[0]+1]
+            f_row = old_pos[0]
+            f_col = old_pos[1]
+            n_row = new_pos[0]
+            direction = 1
 
-        if board_section.sum() != 0 and piece != 3:
-            print(board_section)
-            first = board_section[board_section != 0][-1]
-            if (first * piece) > 0 or this.piece_at(new_pos[0],new_pos[1]) != first:
-                return False
+            if f_row > n_row:
+                direction = -1
+
+            for i in range(1,abs(old_pos[0] - new_pos[0])):
+                board_section.append(this.piece_at(f_row + i * direction, f_col + i*direction))
+
+            board_section = np.array(board_section)
+            
+        non_zeroes = board_section[board_section != 0]
+        print(non_zeroes.size)
+
+        if  non_zeroes.size != 0 and non_zeroes.size != 1 and non_zeroes[0] * piece > 0:
+            print(non_zeroes[0] * piece > 0)
+            return False
         
-
         return True
     
   

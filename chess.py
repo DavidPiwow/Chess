@@ -23,8 +23,10 @@ class PieceType(Enum):
     Queen = 5,
     King = 6
 
-colors = [(255,0,0),(255, 94, 0),(251, 255, 0),(0,255,0),(0,0,255),(255, 0, 255)]
+colors_light = [(255,0,0),(255, 94, 0),(251, 255, 0),(0,255,0),(0,0,255),(255, 0, 255)]
+colors_dark = [(110, 15, 0),(140, 46, 6),(153, 104, 24),(55, 74, 7),(0, 17, 99),(119, 0, 128)]
 
+pieces = ["Empty","Pawn","Castle","Horse","Bishop","Queen","King"]
 #valid_castle = lambda x: True if (x[0] != 0 and x[1] > 0) or (x[1] != 0 and x[0] > 0) else False
 #valid_pawn   = lambda x: True if (x[0]  > 0 and x[1] == 0) else False
 
@@ -83,9 +85,20 @@ def drawBoard(board, size):
             pygame.draw.rect(screen, color = white if draw_white else black, rect=rect)
             
             if board[y][x] != 0:
-                pygame.draw.circle(screen, color=pygame.Color(colors[abs(board[y][x])-1]), center=(x_pos + rect_size/2,y_pos + rect_size/2), radius=10)
-            draw_white = not draw_white
+                if board[y][x] > 0:
+                    text_color = colors_dark[abs(board[y][x])-1]
+                    pygame.draw.circle(screen, color=pygame.Color(colors_light[abs(board[y][x])-1]), center=(x_pos + rect_size/2,y_pos + rect_size/2), radius=20)
+                else:
+                    text_color = colors_light[abs(board[y][x])-1]
+                    pygame.draw.circle(screen, color=pygame.Color(colors_dark[abs(board[y][x])-1]), center=(x_pos + rect_size/2,y_pos + rect_size/2), radius=20)
+                text = font.render(pieces[abs(board[y][x])][0],True, text_color)
+                textRect = text.get_rect()
+                textRect.center = (x_pos + rect_size/2,y_pos + rect_size/2)
+                
+                screen.blit(text, textRect)
 
+            draw_white = not draw_white
+            
         draw_white = not draw_white
 
 
@@ -94,11 +107,12 @@ pygame.init()
 
 gameboard = chess_board.GameBoard()
 
+font = pygame.font.Font('freesansbold.ttf', 24)
 running = True
 
 from_pos = np.empty(0)
 to_pos = np.empty(0)
-
+print(gameboard.board)
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -116,8 +130,9 @@ while running:
                     if (from_pos.size != 0 and to_pos.size != 0):
                         try:
                             gameboard.move_to(from_pos,to_pos)
-                        except:
+                        except Exception as e:
                             print("move error -> reset")
+                            print(e)
         
                     from_pos = np.empty(0)
                     to_pos = np.empty(0)
