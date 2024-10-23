@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-=======
-"""
-to - do: fix this code because it was put on the back burner while working on the chess board logic
-"""
-
-import os
->>>>>>> 603365cc2283788fbeaaa9883bb4f5c56da0f308
 import numpy as np
 import pygame as pygame
 from enum import Enum
