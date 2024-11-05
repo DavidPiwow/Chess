@@ -5,7 +5,6 @@
 
 struct _board {
     char grid[BOARD_SIZE * BOARD_SIZE];
-    char* board_start;
     char* board_end;
 };
 
@@ -20,33 +19,34 @@ typedef int (*validation_function)(Move*);
 
 Board* create_board() {
     Board* temp = (Board*)malloc(sizeof(Board));
-    temp->board_start = &temp->grid[0];
-    temp->board_end = (temp->board_start + BOARD_SIZE * BOARD_SIZE);
-	char pieces_u[8] = {'C','N','B','Q','K','B','N','C'}; 
-    char pieces_l[8] = {'c','n','b','q','k','b','n','c'};
-    char* cur_pos = temp->board_start;
-    memcpy(cur_pos, *pieces_u, sizeof(pieces_u));
-  
+    char* board_start = &temp->grid[0];
+    temp->board_end = (board_start + BOARD_SIZE * BOARD_SIZE);
+	char pieces_u[16] = {'C','N','B','Q','K','B','N','C','P','P','P','P','P','P','P','P'}; 
+    char pieces_l[16] = {'p','p','p','p','p','p','p','p','c','n','b','q','k','b','n','c'};
+
+    memset(temp->grid, 0, BOARD_SIZE * BOARD_SIZE * sizeof(int));
+    memcpy(board_start, pieces_u, sizeof(pieces_u));
+    memcpy(temp->board_end - 16, pieces_l, sizeof(pieces_l));
     
     return temp;
 }
 
-void print_board(Board* grid) {
-    char* cur_pos = grid->board_start;
-     while (cur_pos != grid->board_end) {
-        printf("%2d ", *cur_pos);
+void print_board(Board* board) {
+    char* cur_pos = board->grid;
+    while (cur_pos != board->board_end) {
+        printf("%c ", *cur_pos);
         cur_pos++;
-        if (((cur_pos - grid->board_start) % BOARD_SIZE) == 0) {
+        if (((cur_pos - board->grid) % BOARD_SIZE) == 0) {
             printf("\n");
         }
     }
 }
 
-static inline char get_piece_at(Board* grid, int x, int y) {
-    return *(grid->board_start + x + (y * BOARD_SIZE));
+static inline char get_piece_at(Board* board, int x, int y) {
+    return *(board->grid + x + (y * BOARD_SIZE));
 }
 
-int sum_row(Board* grid, Move* move) {
+int sum_row(Board* board, Move* move) {
     int x_from = (move->x1);
     int x_to = (move->x2);
     int y = (move->y2);
@@ -57,13 +57,13 @@ int sum_row(Board* grid, Move* move) {
     }
     int sum = 0;
     for (; x_from <= x_to; x_from++) {
-        printf("%d ",get_piece_at(grid, x_from, y));
-        sum += get_piece_at(grid, x_from, y);
+        printf("%d ",get_piece_at(board, x_from, y));
+        sum += get_piece_at(board, x_from, y);
     }
     return sum;
 }
 
-int sum_column(Board* grid, Move* move) {
+int sum_column(Board* board, Move* move) {
 	int x = move->x1;
 	int y_from = move->y1;
 	int y_to = move->y2;
@@ -74,8 +74,8 @@ int sum_column(Board* grid, Move* move) {
     }
     int sum = 0;
     for (; y_from <= y_to; y_from++) {
-            printf("%d ",get_piece_at(grid, x, y_from));
-            sum += get_piece_at(grid, x, y_from);
+            printf("%c ",get_piece_at(board, x, y_from));
+            sum += get_piece_at(board, x, y_from);
     }
     return sum;
 }
@@ -86,16 +86,15 @@ int check_valid(validation_function func, Board* grid) {
 }
 
 int validate_row() {
-	
+	return 0;
 } 
 
-void print_column(Board* grid, int column) {
+void print_column(Board* board, int column) {
     if (column >= BOARD_SIZE) return;
     for (size_t i = 0; i < BOARD_SIZE; i++) {
-        printf("%d\n", *(grid->board_start+i*BOARD_SIZE + column));
+        printf("%d\n", *(board->grid+i*BOARD_SIZE + column));
     }
 }
-
 
 int main() {
     Board* game_board = create_board();
